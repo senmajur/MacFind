@@ -219,7 +219,7 @@ export const ItemDetailPage = () => {
                   <div key={msg.sender_id} className="thread-card">
                     <div>
                       <div className="thread-label">Claimer</div>
-                      <div className="thread-value">{msg.sender_id}</div>
+                      <div className="thread-value">Person</div>
                       <div className="thread-snippet">{msg.body}</div>
                     </div>
                     <button
