@@ -170,13 +170,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => cleanup?.();
   }, [ensureAppUser]);
 
-  const buildRedirectUrl = useCallback((redirectTo?: string) => {
-    const base = window.location.origin;
-    const redirectParam = redirectTo
-      ? `?redirect=${encodeURIComponent(redirectTo)}`
-      : '';
-    return `${base}/${redirectParam}`;
-  }, []);
+ const buildRedirectUrl = useCallback((redirectTo?: string) => {
+  const base = (siteUrl || window.location.origin).replace(/\/$/, '');
+  const redirectParam = redirectTo
+    ? `?redirect=${encodeURIComponent(redirectTo)}`
+    : '';
+  return `${base}/${redirectParam}`; // results in https://domain.com/?redirect=...
+}, []);
 
   const signIn = useCallback(
     async (redirectTo?: string) => {
