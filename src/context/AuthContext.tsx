@@ -36,7 +36,11 @@ const demoUser: UserProfile = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 // Set to false to temporarily allow any email domain (e.g., for testing)
-const enforceMcMasterEmail = false;
+const enforceMcMasterEmail = true;
+const siteUrl =
+  (import.meta.env.VITE_SITE_URL as string | undefined) ||
+  (import.meta.env.NEXT_PUBLIC_SITE_URL as string | undefined) ||
+  '';
 
 const formatAuthErrorMessage = (raw: unknown) => {
   const fallback = 'Authentication failed. Please try again.';
