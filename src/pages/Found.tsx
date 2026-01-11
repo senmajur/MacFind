@@ -69,7 +69,7 @@ const buildSuggestedTags = (
 
 export const FoundPage = () => {
   const { user, requireLogin } = useAuth();
-  const { postFound, items, refreshItems } = useData();
+  const { postFound, items, refreshItems, deleteItem } = useData();
 
   useEffect(() => {
     document.body.classList.add('landing-body');
@@ -77,7 +77,6 @@ export const FoundPage = () => {
       document.body.classList.remove('landing-body');
     };
   }, []);
-
   const [file, setFile] = useState<File | null>(null);
   const [locationFoundAt, setLocationFoundAt] = useState('');
   const [description, setDescription] = useState('');
@@ -85,6 +84,8 @@ export const FoundPage = () => {
   const [tagInput, setTagInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [manageMessage, setManageMessage] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const myItems = useMemo<Item[]>(() => {
     if (!user) return [];
@@ -129,6 +130,7 @@ export const FoundPage = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
+    setManageMessage(null);
     if (!requireLogin('/found')) return;
     if (!file) {
       setMessage('Please upload a photo to post.');
@@ -156,6 +158,21 @@ export const FoundPage = () => {
       setMessage('Could not post item. Check console for details.');
     }
     setSubmitting(false);
+  };
+
+  const handleDelete = async (itemId: string) => {
+    setManageMessage(null);
+    if (!requireLogin('/found')) return;
+    const confirmed = window.confirm('Delete this post?');
+    if (!confirmed) return;
+    setDeletingId(itemId);
+    const success = await deleteItem(itemId, user);
+    setDeletingId(null);
+    if (success) {
+      setManageMessage('Post deleted.');
+    } else {
+      setManageMessage('Could not delete that post. Please try again.');
+    }
   };
 
   return (
@@ -277,6 +294,7 @@ export const FoundPage = () => {
         <h3>My posted items</h3>
         {!user && <p className="hint">Log in to see your postings.</p>}
       </div>
+      {manageMessage && <p className="hint">{manageMessage}</p>}
       <div className="grid">
         {myItems.length === 0 && user && (
           <div className="card">
@@ -284,7 +302,23 @@ export const FoundPage = () => {
           </div>
         )}
         {myItems.map((item) => (
-          <ItemCard key={item.id} item={item} />
+          <ItemCard
+            key={item.id}
+            item={item}
+            actions={
+              <button
+                type="button"
+                className="ghost-button danger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleDelete(item.id);
+                }}
+                disabled={deletingId === item.id}
+              >
+                {deletingId === item.id ? 'Deleting...' : 'Delete post'}
+              </button>
+            }
+          />
         ))}
       </div>
     </div>

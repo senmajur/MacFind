@@ -531,6 +531,22 @@ body.landing-body {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
 }
 
+.item-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.ghost-button.danger {
+  color: #b11226;
+  border-color: #f3d6db;
+  background: #fff5f6;
+}
+
+.ghost-button.danger:hover {
+  background: #ffe1e5;
+}
+
 .item-image {
   height: 170px;
   border-radius: 14px;

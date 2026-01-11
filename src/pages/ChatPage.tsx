@@ -13,9 +13,6 @@ const quickPrompts = [
   'What proof do you need?',
 ];
 
-const macFromEmail = (email?: string | null) =>
-  email ? email.split('@')[0] : 'Unknown';
-
 const sortMessages = (list: Message[]) =>
   [...list].sort(
     (a, b) =>
@@ -32,7 +29,6 @@ export const ChatPage = () => {
   const [item, setItem] = useState<Item | null>(null);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [nameMap, setNameMap] = useState<Record<string, string>>({});
   const channelRef = useRef<
     ReturnType<NonNullable<typeof supabase>['channel']> | null
   >(null);
@@ -81,55 +77,17 @@ export const ChatPage = () => {
     };
   }, [itemId, otherUserId, user?.id, markThreadRead]);
 
-  const resolveName = useMemo(
-    () => async (id: string) => {
-      if (nameMap[id]) return;
-      if (user && id === user.id) {
-        setNameMap((prev) => ({
-          ...prev,
-          [id]: macFromEmail(user.email),
-        }));
-        return;
-      }
-      if (!supabase) {
-        setNameMap((prev) => ({
-          ...prev,
-          [id]: id.slice(0, 6),
-        }));
-        return;
-      }
-      const { data, error } = await supabase
-        .from('users')
-        .select('email,name')
-        .eq('id', id)
-        .maybeSingle();
-      if (error) {
-        setNameMap((prev) => ({ ...prev, [id]: id.slice(0, 6) }));
-        return;
-      }
-      const display =
-        data?.email ? macFromEmail(data.email) : data?.name ?? id.slice(0, 6);
-      setNameMap((prev) => ({ ...prev, [id]: display }));
-    },
-    [nameMap, user],
-  );
-
-  useEffect(() => {
-    const ids = new Set<string>();
-    if (user?.id) ids.add(user.id);
-    if (otherUserId) ids.add(otherUserId);
-    messages.forEach((m) => {
-      ids.add(m.sender_id);
-      ids.add(m.receiver_id);
-    });
-    ids.forEach((id) => void resolveName(id));
-  }, [messages, otherUserId, user?.id, resolveName]);
+  const postCreatorId = item?.owner_id ?? item?.poster_id ?? null;
+  const isPostCreator = Boolean(user?.id && postCreatorId && user.id === postCreatorId);
+  const isItemSeeker = Boolean(user?.id && postCreatorId && user.id !== postCreatorId);
 
   const handleSend = async (body: string) => {
     if (!itemId || !otherUserId) return;
     if (!requireLogin(`/chat/${itemId}/${otherUserId}`)) return;
     const trimmed = body.trim();
     if (!trimmed) return;
+    if (trimmed === 'STATUS:RETURN_CONFIRMED' && !isPostCreator) return;
+    if (trimmed === 'STATUS:FOUND_CONFIRMED' && !isItemSeeker) return;
     await sendMessage(itemId, otherUserId, trimmed, user);
     setMessages((prev) =>
       sortMessages([
@@ -174,6 +132,8 @@ export const ChatPage = () => {
   }, [bothConfirmed, itemId, markStatus]);
 
   const handleStatusClick = (kind: 'FOUND' | 'RETURN') => {
+    if (kind === 'FOUND' && !isItemSeeker) return;
+    if (kind === 'RETURN' && !isPostCreator) return;
     const code =
       kind === 'FOUND' ? 'STATUS:FOUND_CONFIRMED' : 'STATUS:RETURN_CONFIRMED';
     void handleSend(code);
@@ -186,9 +146,6 @@ export const ChatPage = () => {
       </div>
     );
   }
-
-  const finderName =
-    nameMap[item?.owner_id ?? ''] || macFromEmail(item?.metadata?.finder_email as string);
 
   return (
     <div className="page">
@@ -225,7 +182,7 @@ export const ChatPage = () => {
         {messages.map((msg) => {
           const mine = msg.sender_id === user?.id;
           const senderName =
-            mine ? 'You' : nameMap[msg.sender_id] ?? msg.sender_id.slice(0, 6);
+            mine ? 'You' : 'Person';
           if (msg.body === 'STATUS:FOUND_CONFIRMED') {
             return (
               <div key={msg.id} className="chat-bubble">
@@ -234,7 +191,7 @@ export const ChatPage = () => {
                   <span>{timeAgo(msg.created_at)}</span>
                 </div>
                 <div className="chat-body">
-                  ✅ I found my item. Thanks {finderName || 'finder'}!
+                  ✅ The seeker confirmed they found their item.
                 </div>
               </div>
             );
@@ -246,7 +203,7 @@ export const ChatPage = () => {
                   <span>{senderName}</span>
                   <span>{timeAgo(msg.created_at)}</span>
                 </div>
-                <div className="chat-body">👍 Item returned to owner.</div>
+                <div className="chat-body">👍 Poster confirmed the item was returned.</div>
               </div>
             );
           }
@@ -263,20 +220,26 @@ export const ChatPage = () => {
       </div>
 
       <div className="chat-actions">
-        <button
-          className="ghost-button"
-          type="button"
-          onClick={() => handleStatusClick('FOUND')}
-        >
-          I found my item
-        </button>
-        <button
-          className="ghost-button"
-          type="button"
-          onClick={() => handleStatusClick('RETURN')}
-        >
-          I returned the item
-        </button>
+        {isItemSeeker && (
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() => handleStatusClick('FOUND')}
+            disabled={bothConfirmed}
+          >
+            I found my item
+          </button>
+        )}
+        {isPostCreator && (
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() => handleStatusClick('RETURN')}
+            disabled={bothConfirmed}
+          >
+            I returned the item
+          </button>
+        )}
         {bothConfirmed && <span className="hint">Post closed.</span>}
       </div>
 

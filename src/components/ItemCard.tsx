@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { resolveImageSrc } from '../lib/images';
 import type { Item } from '../types';
 import { timeAgo } from '../utils/format';
@@ -6,9 +6,10 @@ import { timeAgo } from '../utils/format';
 interface Props {
   item: Item;
   onClick?: () => void;
+  actions?: ReactNode;
 }
 
-export const ItemCard = ({ item, onClick }: Props) => {
+export const ItemCard = ({ item, onClick, actions }: Props) => {
   const rawImagePath =
     item.item_images?.[0]?.thumbnail_path ?? item.item_images?.[0]?.path ?? null;
   const imageSrc = useMemo(() => resolveImageSrc(rawImagePath), [rawImagePath]);
@@ -48,6 +49,7 @@ export const ItemCard = ({ item, onClick }: Props) => {
           ))}
         </div>
       </div>
+      {actions && <div className="item-actions">{actions}</div>}
     </div>
   );
 };

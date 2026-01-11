@@ -55,6 +55,7 @@ interface DataContextValue {
     receiverId: string,
   ) => Promise<void>;
   markStatus: (itemId: string, status: ItemStatus) => Promise<void>;
+  deleteItem: (itemId: string, user: UserProfile | null) => Promise<boolean>;
 }
 
 const DataContext = createContext<DataContextValue | undefined>(undefined);
@@ -626,6 +627,45 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     [refreshItems],
   );
 
+  const deleteItem = useCallback(
+    async (itemId: string, user: UserProfile | null) => {
+      if (!itemId) return false;
+      if (!supabase) {
+        setDemoMessages((prev) => prev.filter((m) => m.item_id !== itemId));
+        setDemoAllItems((prev) => prev.filter((item) => item.id !== itemId));
+        setItems((prev) => prev.filter((item) => item.id !== itemId));
+        return true;
+      }
+
+      const { error } = await supabase.from('items').delete().eq('id', itemId);
+      if (error) {
+        console.error('Failed to delete item', error.message);
+        return false;
+      }
+
+      setItems((prev) => prev.filter((item) => item.id !== itemId));
+      await refreshItems({ status: 'found' });
+
+      if (user?.id) {
+        try {
+          const key = `macfind:my-item-ids:${user.id}`;
+          const raw = localStorage.getItem(key);
+          const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+          const ids = Array.isArray(parsed)
+            ? parsed.filter((value): value is string => typeof value === 'string')
+            : [];
+          const next = ids.filter((id) => id !== itemId);
+          localStorage.setItem(key, JSON.stringify(next));
+        } catch {
+          // ignore localStorage failures
+        }
+      }
+
+      return true;
+    },
+    [refreshItems],
+  );
+
   const value = useMemo(
     () => ({
       items,
@@ -640,6 +680,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       fetchUnreadMessages,
       markThreadRead,
       markStatus,
+      deleteItem,
     }),
     [
       items,
@@ -654,6 +695,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       fetchUnreadMessages,
       markThreadRead,
       markStatus,
+      deleteItem,
     ],
   );
 
