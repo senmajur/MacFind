@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ItemCard } from '../components/ItemCard';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -70,6 +70,13 @@ const buildSuggestedTags = (
 export const FoundPage = () => {
   const { user, requireLogin } = useAuth();
   const { postFound, items, refreshItems, deleteItem } = useData();
+
+  useEffect(() => {
+    document.body.classList.add('landing-body');
+    return () => {
+      document.body.classList.remove('landing-body');
+    };
+  }, []);
   const [file, setFile] = useState<File | null>(null);
   const [locationFoundAt, setLocationFoundAt] = useState('');
   const [description, setDescription] = useState('');

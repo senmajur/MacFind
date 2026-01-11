@@ -2,30 +2,8 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const features = [
-  {
-    title: 'McMaster-only community',
-    detail: 'Email login locked to @mcmaster.ca so every exchange is on campus.',
-  },
-  {
-    title: 'Blurred-by-default photos',
-    detail: 'Every thumbnail stays blurred until a claim is approved for safety.',
-  },
-  {
-    title: 'AI-powered matching',
-    detail: 'Gemini labels, categories, and color tags to help you search faster.',
-  },
-  {
-    title: 'Built-in chat',
-    detail: 'Coordinate handoff spots like MUSC or Mills with a safe chat.',
-  },
-];
-
-const steps = [
-  { label: 'Found an item?', action: 'Post it with a blurred photo + location found at.' },
-  { label: 'Lost something?', action: 'Search "airpods", "hoodie", "keys" on the marketplace.' },
-  { label: 'Claim + chat', action: 'Send proof, then chat to meet up in a safe campus spot.' },
-];
+import { useState } from 'react';
+import '../App.css'; 
 
 const isSafeRedirect = (value: string) =>
   value.startsWith('/') && !value.startsWith('//') && !value.includes('://');
@@ -34,9 +12,18 @@ export const Landing = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signIn, isDemo } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    document.body.classList.add('landing-body');
+    return () => {
+      document.body.classList.remove('landing-body');
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
+
     const params = new URLSearchParams(location.search);
     const redirect = params.get('redirect');
     if (!redirect) return;
@@ -44,7 +31,7 @@ export const Landing = () => {
     navigate(redirect, { replace: true });
   }, [location.search, navigate, user]);
 
-  const handleCTA = async (path: string) => {
+  const handleAction = async (path: string) => {
     if (!user) {
       await signIn(path);
       if (isDemo) navigate(path);
@@ -53,98 +40,63 @@ export const Landing = () => {
     navigate(path);
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    handleAction(`/lost?q=${encodeURIComponent(searchQuery)}`);
+  };
+
   return (
-    <div className="landing">
-      <section className="hero">
-        <div className="hero-copy">
-          <span className="pill">McMaster Marauders - Lost &amp; Found</span>
-          <h1>Find lost items on campus - fast, safe, McMaster-only.</h1>
-          <p className="lede">
-            MACFIND is a campus-only lost &amp; found marketplace with blurred photos,
-            AI tagging, and built-in chat so you can reunite items without guesswork.
-          </p>
-          <div className="cta-row">
-            <button className="primary-button" onClick={() => void signIn()}>
-              Continue with McMaster email
-            </button>
-            <button className="ghost-button" onClick={() => void handleCTA('/lost')}>
-              I lost an item
-            </button>
-            <button className="accent-button" onClick={() => void handleCTA('/found')}>
-              I found an item
-            </button>
-          </div>
-          <div className="subtext">
-            <strong>McMaster-only.</strong> Photos stay blurred in the feed. AI labels improve
-            search. Chat to set a safe meetup (MUSC, Mills, ETB).
-          </div>
+    <div className="landing-page">
+      <div className="landing-hero">
+        <h1 className="hero-title">
+          Lost something at <span className="highlight-text">Mac?</span>
+        </h1>
+        <p className="hero-subtitle">
+          The official, safe marketplace to reunite with your belongings on campus.
+        </p>
+        
+        <form onSubmit={handleSearch} className="hero-search">
+          <input 
+            type="text" 
+            placeholder="Search e.g. 'AirPods', 'Blue Hoodie'..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button type="submit" className="search-button">
+            Search
+          </button>
+        </form>
+      </div>
+
+      <div className="action-grid">
+        <div className="action-card lost-card" onClick={() => handleAction('/lost')}>
+          <div className="card-icon">🔍</div>
+          <h2>I Lost Something</h2>
+          <p>Browse recent findings or search for your specific item.</p>
+          <span className="card-link">Browse Items &rarr;</span>
         </div>
 
-        <div className="hero-card">
-          <div className="hero-card__header">
-            <div>
-              <div className="mini-title">Live marketplace</div>
-              <div className="mini-subtitle">blurred thumbnails - AI tags - chat ready</div>
-            </div>
-            <div className="status-dot">LIVE</div>
-          </div>
-          <div className="hero-grid">
-            <div className="hero-item">
-              <div className="blurred-thumb" />
-              <div className="hero-item__body">
-                <div className="hero-item__title">"white apple airpods"</div>
-                <div className="chips">
-                  <span className="chip">Electronics</span>
-                  <span className="chip">MUSC</span>
-                  <span className="chip chip-soft">Found</span>
-                </div>
-              </div>
-            </div>
-            <div className="hero-item">
-              <div className="blurred-thumb" />
-              <div className="hero-item__body">
-                <div className="hero-item__title">"maroon hoodie"</div>
-                <div className="chips">
-                  <span className="chip">Clothing</span>
-                  <span className="chip">Mills</span>
-                  <span className="chip chip-soft">Found</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="hero-footer">
-            <div>
-              <div className="mini-title">AI assist</div>
-              <div className="mini-subtitle">Gemini auto-labels photos for faster matching.</div>
-            </div>
-            <div className="pill pill-gold">Blurred by default</div>
-          </div>
+        <div className="action-card found-card" onClick={() => handleAction('/found')}>
+          <div className="card-icon">📸</div>
+          <h2>I Found Something</h2>
+          <p>Snap a photo (it blurs automatically) and help someone out.</p>
+          <span className="card-link">Post Item &rarr;</span>
         </div>
-      </section>
-
-      <section className="feature-grid">
-        {features.map((feature) => (
-          <div key={feature.title} className="feature-card">
-            <h3>{feature.title}</h3>
-            <p>{feature.detail}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className="steps">
-        <h2>How it works</h2>
-        <div className="steps-grid">
-          {steps.map((step, index) => (
-            <div key={step.label} className="step-card">
-              <div className="step-number">{index + 1}</div>
-              <div>
-                <div className="step-label">{step.label}</div>
-                <div className="step-action">{step.action}</div>
-              </div>
-            </div>
-          ))}
+      </div>
+      
+      <div className="trust-badges">
+        <div className="badge">
+           <span>🛡️</span> McMaster Verified
         </div>
-      </section>
+        <div className="badge">
+           <span>🔒</span> Secure Chat
+        </div>
+        <div className="badge">
+           <span>🤖</span> AI Matching
+        </div>
+      </div>
     </div>
   );
 };
+

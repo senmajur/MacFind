@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { useTheme } from '../context/ThemeContext';
 import type { Message } from '../types';
 import { supabase } from '../lib/supabase';
 import '../App.css';
@@ -24,6 +25,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
     submitEmail,
   } = useAuth();
   const { fetchUnreadMessages, markThreadRead } = useData();
+  const { theme, toggleTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [unread, setUnread] = useState<Message[]>([]);
@@ -122,11 +124,25 @@ export const Layout = ({ children }: { children: ReactNode }) => {
           ))}
         </nav>
         <div className="nav-actions">
+          <button
+            type="button"
+            className="icon-button"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
           {user ? (
             <>
-              <span className="nav-user">
-                {user.name || 'McMaster user'} - {user.email}
-              </span>
+              <div className="user-profile-summary">
+                <span className="user-avatar">
+                   {(user.email || 'U').charAt(0).toUpperCase()}
+                </span>
+                <span className="user-name">
+                  {user.email?.split('@')[0]}
+                </span>
+              </div>
               <div className="notification">
                 <button
                   type="button"
@@ -177,9 +193,10 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             </>
           ) : (
             <button className="primary-button" onClick={handleOpenAuth}>
-              Continue with McMaster email
+              Log In with MacID
             </button>
           )}
+
         </div>
       </header>
 
