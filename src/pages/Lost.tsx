@@ -21,6 +21,13 @@ export const LostPage = () => {
   });
 
   useEffect(() => {
+    document.body.classList.add('landing-body');
+    return () => {
+      document.body.classList.remove('landing-body');
+    };
+  }, []);
+
+  useEffect(() => {
     void refreshItems(filters);
   }, [filters, refreshItems]);
 
