@@ -116,13 +116,14 @@ export const ChatPage = () => {
     return { foundBy, returnedBy };
   }, [messages]);
 
-  const bothConfirmed =
+  const bothConfirmed = Boolean(
     itemId &&
     otherUserId &&
     statusPayloads.foundBy.size > 0 &&
     statusPayloads.returnedBy.size > 0 &&
     statusPayloads.foundBy.has(otherUserId) &&
-    statusPayloads.returnedBy.has(user?.id ?? '');
+    statusPayloads.returnedBy.has(user?.id ?? '')
+  );
 
   useEffect(() => {
     if (bothConfirmed && itemId && !hasClosedRef.current) {
