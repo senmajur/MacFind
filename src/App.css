@@ -104,9 +104,10 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-size: 24px;
+  font-family: 'Titan One', cursive;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-size: 28px;
   text-transform: uppercase;
 }
 
@@ -289,6 +290,14 @@ body.landing-body {
   backdrop-filter: blur(3px); /* Subtle frost on the background image itself/overlay */
 }
 
+body.marketplace-body {
+  background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('/maxresdefault.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+  backdrop-filter: blur(3px); /* Subtle frost on the background image itself/overlay */
+}
+
 /* Modern Landing Page Styles */
 .landing-page {
   /* Background is now handled by body.landing-body */
@@ -309,11 +318,13 @@ body.landing-body {
 }
 
 .hero-title {
-  font-size: 3rem; /* 48px */
-  font-weight: 800;
+  font-family: 'Titan One', cursive;
+  font-size: 3.5rem; /* Increased size to match Titan One's impact */
+  font-weight: 400; /* Titan One is already bold */
   line-height: 1.1;
   color: var(--ink);
   margin: 0;
+  text-transform: uppercase; /* Campus Cart has uppercase headline */
 }
 
 .highlight-text {
@@ -920,6 +931,53 @@ body.landing-body {
 .notification-body {
   font-size: 12px;
   color: var(--muted);
+}
+
+
+/* Animated Plus Button for Marketplace */
+.add-found-btn {
+  height: 42px;
+  padding: 0 20px 0 16px;
+  border-radius: 99px;
+  background: var(--maroon);
+  color: white;
+  border: none;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  overflow: hidden;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(122, 0, 60, 0.25);
+  position: relative;
+}
+
+.add-found-btn .btn-text {
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.4s ease;
+  margin-left: 8px;
+  opacity: 1;
+  max-width: 200px;
+}
+
+.add-found-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(122, 0, 60, 0.4);
+  background: linear-gradient(135deg, var(--maroon), #96004b);
+}
+
+.add-found-btn .plus-icon {
+  font-weight: 300;
+  font-size: 28px;
+  line-height: 1;
+  transition: transform 0.4s ease;
+}
+
+.add-found-btn:hover .plus-icon {
+  transform: rotate(90deg);
 }
 
 @media (max-width: 900px) {

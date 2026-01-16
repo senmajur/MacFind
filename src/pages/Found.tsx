@@ -72,9 +72,9 @@ export const FoundPage = () => {
   const { postFound, items, refreshItems, deleteItem } = useData();
 
   useEffect(() => {
-    document.body.classList.add('landing-body');
+    document.body.classList.add('marketplace-body');
     return () => {
-      document.body.classList.remove('landing-body');
+      document.body.classList.remove('marketplace-body');
     };
   }, []);
   const [file, setFile] = useState<File | null>(null);

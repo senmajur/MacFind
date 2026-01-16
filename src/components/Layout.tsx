@@ -9,7 +9,6 @@ import '../App.css';
 
 const navLinks = [
   { to: '/lost', label: 'Marketplace' },
-  { to: '/found', label: 'Post Found' },
 ];
 
 export const Layout = ({ children }: { children: ReactNode }) => {

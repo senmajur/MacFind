@@ -84,18 +84,6 @@ export const Landing = () => {
           <span className="card-link">Post Item &rarr;</span>
         </div>
       </div>
-      
-      <div className="trust-badges">
-        <div className="badge">
-           <span>🛡️</span> McMaster Verified
-        </div>
-        <div className="badge">
-           <span>🔒</span> Secure Chat
-        </div>
-        <div className="badge">
-           <span>🤖</span> AI Matching
-        </div>
-      </div>
     </div>
   );
 };

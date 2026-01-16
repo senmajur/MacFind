@@ -21,9 +21,9 @@ export const LostPage = () => {
   });
 
   useEffect(() => {
-    document.body.classList.add('landing-body');
+    document.body.classList.add('marketplace-body');
     return () => {
-      document.body.classList.remove('landing-body');
+      document.body.classList.remove('marketplace-body');
     };
   }, []);
 
@@ -67,11 +67,17 @@ export const LostPage = () => {
             Blurred thumbnails, AI vague labels, and campus-only chat make it feel like a mini Kijiji for McMaster.
           </p>
         </div>
-        {!user && (
-          <button className="primary-button" onClick={() => void signIn('/lost')}>
-            Log in to claim
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <button className="add-found-btn" onClick={() => navigate('/found')} aria-label="Post found item">
+            <span className="plus-icon">+</span>
+            <span className="btn-text">Post Found Item</span>
           </button>
-        )}
+          {!user && (
+            <button className="primary-button" onClick={() => void signIn('/lost')}>
+              Log in to claim
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="filters">
